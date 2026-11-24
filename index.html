@@ -37,6 +37,14 @@ h2{font:700 17px Manrope,sans-serif;margin:34px 0 12px;color:var(--gold);letter-
 .week b{color:var(--txt)}
 .wk{height:6px;border-radius:4px;background:#0b1422;overflow:hidden;margin-top:5px}
 .wk i{display:block;height:100%;background:var(--gold)}
+.today{background:#0b1422;border-radius:10px;padding:10px 12px;margin:10px 0}
+.today .lb{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+.today .big{font:800 24px Manrope,sans-serif;margin:2px 0}
+.today .parts{font-size:12.5px;color:var(--mut)}
+.today .parts b{color:var(--txt)}
+.today.over{outline:1px solid var(--red)}
+.today.over .big{color:var(--red)}
+.today .warn{font-size:12px;color:var(--red);margin-top:4px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:12px;padding:3px 8px;border-radius:20px;background:#0b1422;color:var(--mut);white-space:nowrap}
 .chip.red{color:var(--red)}
@@ -94,7 +102,7 @@ label.tg{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13.5
     <select id="fS" aria-label="Status"></select>
     <select id="fC" aria-label="Cliente"></select>
     <input type="search" id="fQ" placeholder="Buscar demanda">
-    <label class="tg"><input type="checkbox" id="fL"> só atrasadas</label>
+    <select id="fL" aria-label="Prazo"><option value="">Qualquer prazo</option><option value="ah">Atrasadas + hoje</option><option value="a">Só atrasadas</option><option value="h">Só de hoje</option></select>
   </div>
   <div class="count" id="count"></div>
   <div class="tbl" id="tbl"></div>
@@ -102,6 +110,7 @@ label.tg{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13.5
   <div class="note">
     Estimativa = horas de trabalho que faltam na demanda. A IA sugere o número e o responsável corrige no campo <b>Estimativa (h)</b> do Notion.<br>
     Demanda com mais de um responsável divide as horas igualmente entre eles. Demanda recorrente conta as horas de uma ocorrência.<br>
+    "Para hoje" soma as horas das demandas atrasadas com as que têm prazo hoje; fica vermelho quando passa de 8h, sinal de que há datas para realocar no Notion.<br>
     "Vence até sexta" soma o que está atrasado com o que tem prazo até o fim desta semana.
   </div>
 </div>
@@ -110,6 +119,7 @@ const GRUPO={"Em andamento":"exec","Ajustes":"exec","Em revisão (Lumen)":"exec"
   "Aguardando terceiros":"wait","Pendente de Resposta (cliente)":"wait","Acompanhar":"wait",
   "Não começou":"todo","Backlog":"todo"};
 const GNOME={exec:"Em execução",wait:"Esperando alguém",todo:"Não começou"};
+const DIA=8; // horas de trabalho num dia, usado no alerta
 const ORDEM=["Paula","Denise","Ana","Ju","Ricardo"];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -121,7 +131,7 @@ const fd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"sem prazo";
 let D=[], sel="";
 
 fetch("data.json?"+Date.now()).then(r=>r.json()).then(j=>{
-  D=j.demandas.map(x=>({...x,g:GRUPO[x.s]||"todo",late:!!x.d&&x.d<HOJE,week:!!x.d&&x.d<=SEXTA}));
+  D=j.demandas.map(x=>({...x,g:GRUPO[x.s]||"todo",late:!!x.d&&x.d<HOJE,hoje:x.d===HOJE,week:!!x.d&&x.d<=SEXTA}));
   $("upd").textContent="Atualizado em "+j.atualizado+" · fonte: Atividades no Notion";
   montaFiltros(); desenha();
 }).catch(()=>{$("upd").textContent="Não foi possível carregar os dados."});
@@ -140,8 +150,9 @@ function desenha(){
   $("kpis").innerHTML=[
     [D.length,"demandas abertas"],
     [fh(tot),"horas estimadas no total"],
+    [fh(D.filter(x=>x.late).reduce((a,x)=>a+(x.h||0),0)),D.filter(x=>x.late).length+" demandas atrasadas","alert"],
+    [fh(D.filter(x=>x.hoje).reduce((a,x)=>a+(x.h||0),0)),"com prazo hoje"],
     [fh(D.filter(x=>x.week).reduce((a,x)=>a+(x.h||0),0)),"vencem até sexta"],
-    [D.filter(x=>x.late).length,"atrasadas","alert"],
     [semH,"sem estimativa"]
   ].map(k=>`<div class="kpi ${k[2]||""}"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("");
 
@@ -150,7 +161,7 @@ function desenha(){
     const hp=x=>(x.h||0)/x.r.length;
     const g={exec:0,wait:0,todo:0}; it.forEach(x=>g[x.g]+=hp(x));
     return {p,n:it.length,h:it.reduce((a,x)=>a+hp(x),0),g,
-      wk:it.filter(x=>x.week).reduce((a,x)=>a+hp(x),0),late:it.filter(x=>x.late).length,sem:it.filter(x=>x.h==null).length};
+      wk:it.filter(x=>x.week).reduce((a,x)=>a+hp(x),0),late:it.filter(x=>x.late).length,lateH:it.filter(x=>x.late).reduce((a,x)=>a+hp(x),0),hojeN:it.filter(x=>x.hoje).length,hojeH:it.filter(x=>x.hoje).reduce((a,x)=>a+hp(x),0),sem:it.filter(x=>x.h==null).length};
   });
   const maxWk=Math.max(1,...P.map(x=>x.wk));
   $("people").innerHTML=P.map(x=>{
@@ -159,13 +170,19 @@ function desenha(){
       <div class="nm">${x.p}<small>${x.n} demandas</small></div>
       <div class="hrs">${fh(x.h)} <small>em aberto</small></div>
       <div class="bar"><i style="width:${x.g.exec/t*100}%;background:var(--exec)"></i><i style="width:${x.g.wait/t*100}%;background:var(--wait)"></i><i style="width:${x.g.todo/t*100}%;background:var(--todo)"></i></div>
+      <div class="today ${x.lateH+x.hojeH>DIA?"over":""}">
+        <div class="lb">Para hoje</div>
+        <div class="big">${fh(x.lateH+x.hojeH)}</div>
+        <div class="parts">Atrasadas <b>${fh(x.lateH)}</b> (${x.late}) + hoje <b>${fh(x.hojeH)}</b> (${x.hojeN})</div>
+        ${x.lateH+x.hojeH>DIA?`<div class="warn">Passa de ${DIA}h num dia: realocar datas</div>`:""}
+      </div>
       <div class="week">Vence até sexta: <b>${fh(x.wk)}</b><div class="wk"><i style="width:${x.wk/maxWk*100}%"></i></div></div>
-      <div class="chips">${x.late?`<span class="chip red">${x.late} atrasada${x.late>1?"s":""}</span>`:'<span class="chip">nada atrasado</span>'}${x.sem?`<span class="chip">${x.sem} sem estimativa</span>`:""}</div>
+      <div class="chips">${x.sem?`<span class="chip">${x.sem} sem estimativa</span>`:""}</div>
     </button>`}).join("");
   document.querySelectorAll(".person").forEach(b=>b.onclick=()=>{sel=sel===b.dataset.p?"":b.dataset.p;$("fP").value=sel;desenha()});
 
-  const q=$("fQ").value.trim().toLowerCase(), s=$("fS").value, c=$("fC").value, L=$("fL").checked;
-  const rows=D.filter(x=>(!sel||x.r.includes(sel))&&(!s||x.g===s)&&(!c||(c==="-"?!x.c:x.c===c))&&(!L||x.late)&&(!q||(x.t+" "+x.c+" "+x.p).toLowerCase().includes(q)))
+  const q=$("fQ").value.trim().toLowerCase(), s=$("fS").value, c=$("fC").value, L=$("fL").value;
+  const rows=D.filter(x=>(!sel||x.r.includes(sel))&&(!s||x.g===s)&&(!c||(c==="-"?!x.c:x.c===c))&&(!L||(L==='a'?x.late:L==='h'?x.hoje:(x.late||x.hoje)))&&(!q||(x.t+" "+x.c+" "+x.p).toLowerCase().includes(q)))
     .sort((a,b)=>(a.d||"9999").localeCompare(b.d||"9999")||b.pri-a.pri);
   $("count").textContent=rows.length+" demanda"+(rows.length===1?"":"s")+" · "+fh(rows.reduce((a,x)=>a+(x.h||0),0))+" estimadas";
   $("tbl").innerHTML='<div class="row head"><div>Demanda</div><div>Responsável</div><div>Status</div><div>Prazo</div><div class="num">Estim.</div></div>'+
