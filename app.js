@@ -13,11 +13,16 @@ const sex=new Date(hoje); sex.setDate(hoje.getDate()+((5-hoje.getDay()+7)%7)); c
 const fd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"sem prazo";
 let D=[], sel="";
 
-fetch("data.json?"+Date.now()).then(r=>r.json()).then(j=>{
+const AOVIVO="https://n8nwebhook.paulamunhoz.online/webhook/demandas-equipe-ao-vivo-5127";
+function carrega(j,vivo){
   D=j.demandas.map(x=>({...x,h:x.s==="Acompanhar"?0:x.h,g:GRUPO[x.s]||"todo",late:!!x.d&&x.d<HOJE,hoje:x.d===HOJE,week:!!x.d&&x.d<=SEXTA}));
-  $("upd").textContent="Atualizado em "+j.atualizado+" · fonte: Atividades no Notion";
+  $("upd").textContent=vivo?"Ao vivo · lido do Notion em "+j.atualizado+" · recarregue a página para atualizar":"Cópia de "+j.atualizado+" (o ao vivo não respondeu; recarregue para tentar de novo)";
   montaFiltros(); desenha();
-}).catch(()=>{$("upd").textContent="Não foi possível carregar os dados."});
+}
+$("upd").textContent="Lendo o Notion…";
+fetch(AOVIVO+"?"+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>{if(!j.demandas)throw 0;carrega(j,true)})
+  .catch(()=>fetch("data.json?"+Date.now()).then(r=>r.json()).then(j=>carrega(j,false))
+  .catch(()=>{$("upd").textContent="Não foi possível carregar os dados."}));
 
 function montaFiltros(){
   $("fP").innerHTML='<option value="">Todas as pessoas</option>'+ORDEM.map(p=>`<option>${p}</option>`).join("");
