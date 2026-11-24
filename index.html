@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Demandas da equipe · Lumen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1a2b; --card:#16263c; --card2:#1c3050; --line:#2a4063; --txt:#eef2f7; --mut:#9fb0c6;
+  --gold:#c9a45c; --exec:#5aa9e6; --wait:#e0b34f; --todo:#5d6f88; --red:#ef6b6b; --green:#58c08a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 Inter,system-ui,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:28px 16px 60px}
+h1{font:800 26px Manrope,sans-serif;margin:0}
+h2{font:700 17px Manrope,sans-serif;margin:34px 0 12px;color:var(--gold);letter-spacing:.02em}
+.sub{color:var(--mut);margin-top:4px;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi b{display:block;font:800 26px Manrope,sans-serif}
+.kpi span{color:var(--mut);font-size:12.5px}
+.kpi.alert b{color:var(--red)}
+.people{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.person{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;text-align:left;color:inherit;font:inherit;transition:.15s}
+.person:hover{border-color:var(--gold)}
+.person.on{border-color:var(--gold);background:var(--card2)}
+.person .nm{font:700 17px Manrope,sans-serif;display:flex;justify-content:space-between;align-items:baseline}
+.person .nm small{font:500 12.5px Inter;color:var(--mut)}
+.person .hrs{font:800 30px Manrope,sans-serif;margin:8px 0 2px}
+.person .hrs small{font:500 13px Inter;color:var(--mut)}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#0b1422;margin:10px 0 10px}
+.bar i{display:block;height:100%}
+.week{font-size:12.5px;color:var(--mut);margin-bottom:8px}
+.week b{color:var(--txt)}
+.wk{height:6px;border-radius:4px;background:#0b1422;overflow:hidden;margin-top:5px}
+.wk i{display:block;height:100%;background:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 8px;border-radius:20px;background:#0b1422;color:var(--mut);white-space:nowrap}
+.chip.red{color:var(--red)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;color:var(--mut);font-size:12.5px;margin:10px 0 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+select,input[type=search]{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;min-width:0}
+input[type=search]{flex:1 1 180px}
+label.tg{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13.5px;padding:0 4px}
+.tbl{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 110px 150px 92px 70px;gap:10px;padding:11px 14px;border-top:1px solid var(--line);align-items:center}
+.row.head{border-top:0;color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.06em;background:#122036}
+.row a{color:var(--txt);text-decoration:none;font-weight:500}
+.row a:hover{color:var(--gold)}
+.meta{color:var(--mut);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{font-size:12px;padding:3px 8px;border-radius:20px;display:inline-block;white-space:nowrap}
+.st.exec{background:rgba(90,169,230,.16);color:var(--exec)}
+.st.wait{background:rgba(224,179,79,.16);color:var(--wait)}
+.st.todo{background:rgba(159,176,198,.14);color:var(--mut)}
+.late{color:var(--red);font-weight:600}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.count{color:var(--mut);font-size:13px;margin:10px 2px}
+.empty{padding:26px;text-align:center;color:var(--mut)}
+.note{color:var(--mut);font-size:12.5px;margin-top:22px;line-height:1.6}
+@media(max-width:760px){
+  .row{grid-template-columns:minmax(0,1fr) 64px;row-gap:6px}
+  .row.head{display:none}
+  .row>div:nth-child(1){grid-column:1/3}
+  .row>div:nth-child(2){display:none}
+  .row>div:nth-child(4){grid-column:1/2;grid-row:2;font-size:12.5px}
+  .row>div:nth-child(3){grid-column:1/2;grid-row:3}
+  .row>div:nth-child(5){grid-column:2/3;grid-row:2/4;align-self:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Demandas da equipe</h1>
+  <div class="sub" id="upd">Carregando…</div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <h2>Carga por pessoa</h2>
+  <div class="people" id="people"></div>
+  <div class="legend">
+    <span><i style="background:var(--exec)"></i>Em execução</span>
+    <span><i style="background:var(--wait)"></i>Esperando alguém</span>
+    <span><i style="background:var(--todo)"></i>Não começou</span>
+    <span>Toque numa pessoa para ver só as demandas dela.</span>
+  </div>
+
+  <h2>Demandas</h2>
+  <div class="filters">
+    <select id="fP" aria-label="Pessoa"></select>
+    <select id="fS" aria-label="Status"></select>
+    <select id="fC" aria-label="Cliente"></select>
+    <input type="search" id="fQ" placeholder="Buscar demanda">
+    <label class="tg"><input type="checkbox" id="fL"> só atrasadas</label>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="tbl" id="tbl"></div>
+
+  <div class="note">
+    Estimativa = horas de trabalho que faltam na demanda. A IA sugere o número e o responsável corrige no campo <b>Estimativa (h)</b> do Notion.<br>
+    Demanda com mais de um responsável divide as horas igualmente entre eles. Demanda recorrente conta as horas de uma ocorrência.<br>
+    "Vence até sexta" soma o que está atrasado com o que tem prazo até o fim desta semana.
+  </div>
+</div>
+<script>
+const GRUPO={"Em andamento":"exec","Ajustes":"exec","Em revisão (Lumen)":"exec",
+  "Aguardando terceiros":"wait","Pendente de Resposta (cliente)":"wait","Acompanhar":"wait",
+  "Não começou":"todo","Backlog":"todo"};
+const GNOME={exec:"Em execução",wait:"Esperando alguém",todo:"Não começou"};
+const ORDEM=["Paula","Denise","Ana","Ju","Ricardo"];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fh=h=>(Math.round(h*10)/10).toLocaleString("pt-BR")+"h";
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const hoje=new Date(), HOJE=iso(hoje);
+const sex=new Date(hoje); sex.setDate(hoje.getDate()+((5-hoje.getDay()+7)%7)); const SEXTA=iso(sex);
+const fd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"sem prazo";
+let D=[], sel="";
+
+fetch("data.json?"+Date.now()).then(r=>r.json()).then(j=>{
+  D=j.demandas.map(x=>({...x,g:GRUPO[x.s]||"todo",late:!!x.d&&x.d<HOJE,week:!!x.d&&x.d<=SEXTA}));
+  $("upd").textContent="Atualizado em "+j.atualizado+" · fonte: Atividades no Notion";
+  montaFiltros(); desenha();
+}).catch(()=>{$("upd").textContent="Não foi possível carregar os dados."});
+
+function montaFiltros(){
+  $("fP").innerHTML='<option value="">Todas as pessoas</option>'+ORDEM.map(p=>`<option>${p}</option>`).join("");
+  $("fS").innerHTML='<option value="">Todos os status</option>'+Object.entries(GNOME).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+  const cl=[...new Set(D.map(x=>x.c).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt"));
+  $("fC").innerHTML='<option value="">Todos os clientes</option><option value="-">Interno (sem cliente)</option>'+cl.map(c=>`<option>${esc(c)}</option>`).join("");
+  ["fP","fS","fC","fQ","fL"].forEach(id=>$(id).addEventListener("input",()=>{sel=$("fP").value;desenha()}));
+}
+
+function desenha(){
+  const semH=D.filter(x=>x.h==null).length;
+  const tot=D.reduce((a,x)=>a+(x.h||0),0);
+  $("kpis").innerHTML=[
+    [D.length,"demandas abertas"],
+    [fh(tot),"horas estimadas no total"],
+    [fh(D.filter(x=>x.week).reduce((a,x)=>a+(x.h||0),0)),"vencem até sexta"],
+    [D.filter(x=>x.late).length,"atrasadas","alert"],
+    [semH,"sem estimativa"]
+  ].map(k=>`<div class="kpi ${k[2]||""}"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("");
+
+  const P=ORDEM.map(p=>{
+    const it=D.filter(x=>x.r.includes(p));
+    const hp=x=>(x.h||0)/x.r.length;
+    const g={exec:0,wait:0,todo:0}; it.forEach(x=>g[x.g]+=hp(x));
+    return {p,n:it.length,h:it.reduce((a,x)=>a+hp(x),0),g,
+      wk:it.filter(x=>x.week).reduce((a,x)=>a+hp(x),0),late:it.filter(x=>x.late).length,sem:it.filter(x=>x.h==null).length};
+  });
+  const maxWk=Math.max(1,...P.map(x=>x.wk));
+  $("people").innerHTML=P.map(x=>{
+    const t=x.h||1;
+    return `<button class="person ${sel===x.p?"on":""}" data-p="${x.p}">
+      <div class="nm">${x.p}<small>${x.n} demandas</small></div>
+      <div class="hrs">${fh(x.h)} <small>em aberto</small></div>
+      <div class="bar"><i style="width:${x.g.exec/t*100}%;background:var(--exec)"></i><i style="width:${x.g.wait/t*100}%;background:var(--wait)"></i><i style="width:${x.g.todo/t*100}%;background:var(--todo)"></i></div>
+      <div class="week">Vence até sexta: <b>${fh(x.wk)}</b><div class="wk"><i style="width:${x.wk/maxWk*100}%"></i></div></div>
+      <div class="chips">${x.late?`<span class="chip red">${x.late} atrasada${x.late>1?"s":""}</span>`:'<span class="chip">nada atrasado</span>'}${x.sem?`<span class="chip">${x.sem} sem estimativa</span>`:""}</div>
+    </button>`}).join("");
+  document.querySelectorAll(".person").forEach(b=>b.onclick=()=>{sel=sel===b.dataset.p?"":b.dataset.p;$("fP").value=sel;desenha()});
+
+  const q=$("fQ").value.trim().toLowerCase(), s=$("fS").value, c=$("fC").value, L=$("fL").checked;
+  const rows=D.filter(x=>(!sel||x.r.includes(sel))&&(!s||x.g===s)&&(!c||(c==="-"?!x.c:x.c===c))&&(!L||x.late)&&(!q||(x.t+" "+x.c+" "+x.p).toLowerCase().includes(q)))
+    .sort((a,b)=>(a.d||"9999").localeCompare(b.d||"9999")||b.pri-a.pri);
+  $("count").textContent=rows.length+" demanda"+(rows.length===1?"":"s")+" · "+fh(rows.reduce((a,x)=>a+(x.h||0),0))+" estimadas";
+  $("tbl").innerHTML='<div class="row head"><div>Demanda</div><div>Responsável</div><div>Status</div><div>Prazo</div><div class="num">Estim.</div></div>'+
+    (rows.length?rows.map(x=>`<div class="row">
+      <div><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a><div class="meta">${esc(x.r.join(" + "))}${x.c?" · "+esc(x.c):""}${x.tipo?" · "+esc(x.tipo):""}</div></div>
+      <div>${esc(x.r.join(" + "))}</div>
+      <div><span class="st ${x.g}">${esc(x.s)}</span></div>
+      <div class="${x.late?"late":""}">${fd(x.d)}${x.late?" · atrasada":""}</div>
+      <div class="num">${x.h==null?"—":fh(x.h)}</div></div>`).join(""):'<div class="empty">Nenhuma demanda com esse filtro.</div>');
+}
+</script>
+</body>
+</html>
