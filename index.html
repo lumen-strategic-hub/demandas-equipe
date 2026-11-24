@@ -181,17 +181,18 @@ function desenha(){
     </button>`}).join("");
   document.querySelectorAll(".person").forEach(b=>b.onclick=()=>{sel=sel===b.dataset.p?"":b.dataset.p;$("fP").value=sel;desenha()});
 
+  const hr=x=>sel&&x.r[0]!==sel?0:x.h;
   const q=$("fQ").value.trim().toLowerCase(), s=$("fS").value, c=$("fC").value, L=$("fL").value;
   const rows=D.filter(x=>(!sel||x.r.includes(sel))&&(!s||x.g===s)&&(!c||(c==="-"?!x.c:x.c===c))&&(!L||(L==='a'?x.late:L==='h'?x.hoje:(x.late||x.hoje)))&&(!q||(x.t+" "+x.c+" "+x.p).toLowerCase().includes(q)))
     .sort((a,b)=>(a.d||"9999").localeCompare(b.d||"9999")||b.pri-a.pri);
-  $("count").textContent=rows.length+" demanda"+(rows.length===1?"":"s")+" · "+fh(rows.reduce((a,x)=>a+(x.h||0),0))+" estimadas";
+  $("count").textContent=rows.length+" demanda"+(rows.length===1?"":"s")+" · "+fh(rows.reduce((a,x)=>a+(hr(x)||0),0))+" estimadas"+(sel?" para "+sel:"");
   $("tbl").innerHTML='<div class="row head"><div>Demanda</div><div>Responsável</div><div>Status</div><div>Prazo</div><div class="num">Estim.</div></div>'+
     (rows.length?rows.map(x=>`<div class="row">
       <div><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a><div class="meta">${esc(x.r[0]+(x.r.length>1?" (executa) + "+x.r.slice(1).join(" + "):""))}${x.c?" · "+esc(x.c):""}${x.tipo?" · "+esc(x.tipo):""}</div></div>
       <div>${esc(x.r.join(" + "))}</div>
       <div><span class="st ${x.g}">${esc(x.s)}</span></div>
       <div class="${x.late?"late":""}">${fd(x.d)}${x.late?" · atrasada":""}</div>
-      <div class="num">${x.h==null?"—":fh(x.h)}</div></div>`).join(""):'<div class="empty">Nenhuma demanda com esse filtro.</div>');
+      <div class="num">${hr(x)==null?"—":fh(hr(x))}${sel&&x.r[0]!==sel?'<div class="meta">só acompanha</div>':""}</div></div>`).join(""):'<div class="empty">Nenhuma demanda com esse filtro.</div>');
 }
 </script>
 </body>
