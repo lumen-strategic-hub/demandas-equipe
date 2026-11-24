@@ -2,6 +2,7 @@
 Uso: NOTION_TOKEN=... python3 gera.py"""
 import json, datetime
 from puxa import call, todas
+from tempo import parse
 EQUIPE = {
  "7d0f5d3c-35b7-486d-a05d-95af9e295980": "Paula",
  "fa9edec2-6ba4-47b8-95d1-f0c77c8333a6": "Denise",
@@ -25,6 +26,7 @@ for p in todas():
     t = "".join(x["plain_text"] for x in pr["Atividade"]["title"]).strip()
     if not resp or not t:
         continue
+    est = "".join(x["plain_text"] for x in pr["Estimativa"]["rich_text"]).strip()
     out.append({
         "t": t, "u": p["url"], "r": resp,
         "s": (pr["Status"]["status"] or {}).get("name") or "Não começou",
@@ -33,7 +35,7 @@ for p in todas():
         "p": ", ".join(titulo(r["id"]) for r in pr["Projetos"]["relation"]),
         "tipo": (pr["Tipo"]["select"] or {}).get("name") or "",
         "pri": len((pr["Prioridade"]["select"] or {}).get("name") or ""),
-        "h": pr["Estimativa (h)"]["number"],
+        "h": parse(est), "e": est,
     })
 agora = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
 json.dump({"atualizado": agora.strftime("%d/%m/%Y %H:%M"), "demandas": out}, open("data.json", "w"), ensure_ascii=False)
