@@ -1,0 +1,26 @@
+name: Atualiza dashboard
+on:
+  schedule:
+    - cron: "7,37 10-23 * * 1-5"   # a cada 30 min, 7h-20h de Brasilia, seg a sex
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: atualiza
+jobs:
+  atualiza:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Gera data.json
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: python3 gera.py
+      - name: Publica
+        run: |
+          git config user.name "robo-dashboard"
+          git config user.email "robo-dashboard@users.noreply.github.com"
+          git add data.json
+          git diff --cached --quiet || (git commit -q -m "Atualiza dados" && git push -q)
