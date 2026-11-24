@@ -75,5 +75,5 @@ function desenha(){
       <div>${esc(x.r.join(" + "))}</div>
       <div><span class="st ${x.g}">${esc(x.s)}</span></div>
       <div class="${x.late?"late":""}">${fd(x.d)}${x.late?" · atrasada":""}</div>
-      <div class="num">${hr(x)==null?"—":fh(hr(x))}${sel&&x.r[0]!==sel?'<div class="meta">só acompanha</div>':""}</div></div>`).join(""):'<div class="empty">Nenhuma demanda com esse filtro.</div>');
+      <div class="num">${hr(x)==null?(x.e?"não entendi: "+esc(x.e):"—"):fh(hr(x))}${sel&&x.r[0]!==sel?'<div class="meta">só acompanha</div>':""}</div></div>`).join(""):'<div class="empty">Nenhuma demanda com esse filtro.</div>');
 }
