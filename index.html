@@ -109,7 +109,7 @@ label.tg{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13.5
 
   <div class="note">
     Estimativa = só o tempo de mão na massa do responsável. Passar a tarefa adiante ou cobrar conta 5 minutos. Acompanhar conta 0: a demanda fica no radar, mas não toma tempo (vale para toda demanda com status "Acompanhar"). O tempo de terceirizados e de espera pelo cliente não entra. A IA sugere o número e o responsável corrige no campo <b>Estimativa (h)</b> do Notion.<br>
-    Demanda com mais de um responsável divide as horas igualmente entre eles. Demanda recorrente conta as horas de uma ocorrência.<br>
+    Demanda com mais de um responsável: as horas vão inteiras para o primeiro nome (quem executa); os demais só acompanham e ficam com 0. Demanda recorrente conta as horas de uma ocorrência.<br>
     "Para hoje" soma as horas das demandas atrasadas com as que têm prazo hoje; fica vermelho quando passa de 8h, sinal de que há datas para realocar no Notion.<br>
     "Vence até sexta" soma o que está atrasado com o que tem prazo até o fim desta semana.
   </div>
@@ -158,7 +158,7 @@ function desenha(){
 
   const P=ORDEM.map(p=>{
     const it=D.filter(x=>x.r.includes(p));
-    const hp=x=>(x.h||0)/x.r.length;
+    const hp=x=>x.r[0]===p?(x.h||0):0;
     const g={exec:0,wait:0,todo:0}; it.forEach(x=>g[x.g]+=hp(x));
     return {p,n:it.length,h:it.reduce((a,x)=>a+hp(x),0),g,
       wk:it.filter(x=>x.week).reduce((a,x)=>a+hp(x),0),late:it.filter(x=>x.late).length,lateH:it.filter(x=>x.late).reduce((a,x)=>a+hp(x),0),hojeN:it.filter(x=>x.hoje).length,hojeH:it.filter(x=>x.hoje).reduce((a,x)=>a+hp(x),0),sem:it.filter(x=>x.h==null).length};
@@ -187,7 +187,7 @@ function desenha(){
   $("count").textContent=rows.length+" demanda"+(rows.length===1?"":"s")+" · "+fh(rows.reduce((a,x)=>a+(x.h||0),0))+" estimadas";
   $("tbl").innerHTML='<div class="row head"><div>Demanda</div><div>Responsável</div><div>Status</div><div>Prazo</div><div class="num">Estim.</div></div>'+
     (rows.length?rows.map(x=>`<div class="row">
-      <div><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a><div class="meta">${esc(x.r.join(" + "))}${x.c?" · "+esc(x.c):""}${x.tipo?" · "+esc(x.tipo):""}</div></div>
+      <div><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a><div class="meta">${esc(x.r[0]+(x.r.length>1?" (executa) + "+x.r.slice(1).join(" + "):""))}${x.c?" · "+esc(x.c):""}${x.tipo?" · "+esc(x.tipo):""}</div></div>
       <div>${esc(x.r.join(" + "))}</div>
       <div><span class="st ${x.g}">${esc(x.s)}</span></div>
       <div class="${x.late?"late":""}">${fd(x.d)}${x.late?" · atrasada":""}</div>
