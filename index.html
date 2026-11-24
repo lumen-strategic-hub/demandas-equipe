@@ -108,7 +108,7 @@ label.tg{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13.5
   <div class="tbl" id="tbl"></div>
 
   <div class="note">
-    Estimativa = horas de trabalho que faltam na demanda. A IA sugere o número e o responsável corrige no campo <b>Estimativa (h)</b> do Notion.<br>
+    Estimativa = só o tempo de mão na massa do responsável. Passar a tarefa adiante, cobrar ou acompanhar conta 5 minutos; o tempo de terceirizados e de espera pelo cliente não entra. A IA sugere o número e o responsável corrige no campo <b>Estimativa (h)</b> do Notion.<br>
     Demanda com mais de um responsável divide as horas igualmente entre eles. Demanda recorrente conta as horas de uma ocorrência.<br>
     "Para hoje" soma as horas das demandas atrasadas com as que têm prazo hoje; fica vermelho quando passa de 8h, sinal de que há datas para realocar no Notion.<br>
     "Vence até sexta" soma o que está atrasado com o que tem prazo até o fim desta semana.
@@ -123,7 +123,7 @@ const DIA=8; // horas de trabalho num dia, usado no alerta
 const ORDEM=["Paula","Denise","Ana","Ju","Ricardo"];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fh=h=>(Math.round(h*10)/10).toLocaleString("pt-BR")+"h";
+const fh=h=>{if(h>0&&h<1){return Math.max(5,Math.round(h*60/5)*5)+"min"}return (Math.round(h*10)/10).toLocaleString("pt-BR")+"h"};
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const hoje=new Date(), HOJE=iso(hoje);
 const sex=new Date(hoje); sex.setDate(hoje.getDate()+((5-hoje.getDay()+7)%7)); const SEXTA=iso(sex);
